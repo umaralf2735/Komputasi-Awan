@@ -5,136 +5,135 @@
 ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)
 ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
 
-A scalable, distributed image resizing system built to handle high-concurrency image processing loads. It uses a producer-consumer architecture with **Flask** (API), **Redis** (Message Queue), and **Python Workers** (Processing), orchestrated via **Docker Compose**.
+Ini adalah tugas besar Komputasi Cloud (Tugas Besar) yang berupa sistem *distributed image resizing*. Sistem ini dirancang untuk menangani proses resize banyak gambar sekaligus tanpa membuat server utama lemot. Menggunakan arsitektur *producer-consumer* dengan **Flask** (API), **Redis** (Antrian), dan **Python Workers** (Pemroses), yang semuanya dijalankan lewat **Docker Compose**.
 
 ---
 
-## 🚀 Features
+## 🚀 Fitur Utama
 
-*   **Distributed Architecture**: Decouples upload handling (API) from processing (Workers) using a message queue.
-*   **Scalable Workers**: Scale the number of processing units horizontally with a single command.
-*   **Web Interface**: Simple, user-friendly UI for uploading images.
-*   **Local Storage Access**: Mapped volumes allow you to access uploaded and processed images directly from your host machine.
-*   **Dockerized**: Fully containerized for easy deployment and isolation.
+*   **Arsitektur Terdistribusi**: Memisahkan penerimaan upload (API) dan pemrosesan gambar (Workers) pakai message queue.
+*   **Worker Skalabel**: Bisa nambah jumlah worker sesuka hati cuma pakai satu perintah.
+*   **Web Interface**: Ada tampilan web sederhana buat upload gambar, nggak harus pakai command line.
+*   **Akses File Lokal**: Folder upload dan hasil resize langsung muncul di folder komputer kita, jadi gampang dicek.
+*   **Full Docker**: Tinggal `docker-compose up`, langsung jalan semua tanpa ribet install dependencies satu-satu.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Cara Kerja sistem
 
-The system consists of three main components:
+Ada 3 komponen utama di sini:
 
 1.  **API Service**:
-    *   Exposes a REST API (`POST /upload`) and a Web UI.
-    *   Validates images and saves them to `storage/uploads`.
-    *   Pushes a "Resize Job" to the Redis Queue.
+    *   Menerima upload gambar lewat web atau API (`POST /upload`).
+    *   Cek file (validasi), terus simpan file aslinya di `storage/uploads`.
+    *   Kirim pesan "Tolong resize gambar ini dong" ke antrian Redis.
 2.  **Message Queue (Redis)**:
-    *   Acts as a broker, distributing jobs to available workers.
+    *   Jadi perantara (broker). Dia yang megang daftar antrian tugas buat dibagi-bagi ke worker yang lagi nganggur.
 3.  **Worker Service**:
-    *   Constantly listens for new jobs.
-    *   Resizes images to 300x300 pixels.
-    *   Saves the result to `storage/processed`.
+    *   Program yang jalan di background, nungguin tugas dari Redis.
+    *   Begitu dapet tugas, dia ambil gambarnya, resize jadi 300x300 pixel.
+    *   Hasilnya disimpan di `storage/processed`.
 
 ---
 
-## 📦 Project Structure
+## 📦 Struktur Project
 
 ```
 project-root/
-├── api/                # Flask API & UI
+├── api/                # Kodingan Flask API & Tampilan Web
 │   ├── app.py
 │   ├── templates/
 │   └── Dockerfile
-├── worker/             # Background Worker
+├── worker/             # Kodingan Worker (Pekerja)
 │   ├── worker.py
 │   └── Dockerfile
-├── storage/            # Persisted Data (Local)
-│   ├── uploads/
-│   └── processed/
-├── docker-compose.yml  # Orchestration
-├── load_test.py        # Stress Testing Script
+├── storage/            # Folder Penyimpanan (Nyambung ke folder lokal)
+│   ├── uploads/        # Gambar asli masuk sini
+│   └── processed/      # Hasil resize masuk sini
+├── docker-compose.yml  # Config buat jalanin semua container
+├── load_test.py        # Script buat ngetes beban (simulasi banyak upload)
 └── README.md
 ```
 
 ---
 
-## 🛠️ Getting Started
+## 🛠️ Cara Menjalankan
 
-### Prerequisites
+### Persiapan
 
-*   **Docker** & **Docker Compose** installed on your machine.
+*   Pastikan udah install **Docker** & **Docker Compose** di laptop/PC.
 
-### Installation & Running
+### Langkah-langkah
 
-1.  **Clone the repository** (or navigate to the project folder):
+1.  **Masuk ke folder project**:
     ```bash
     cd path/to/project
     ```
 
-2.  **Start the application**:
+2.  **Jalankan aplikasi**:
     ```bash
     docker-compose up -d --build
     ```
-    *This will start the API, Redis, and 3 Worker instances.*
+    *Tunggu sebentar sampai proses build selesai dan semua kontainer jalan.*
 
-3.  **Verify Status**:
+3.  **Cek status**:
     ```bash
     docker-compose ps
     ```
-    Ensure all containers are `Up`.
+    Pastikan semua statusnya `Up`.
 
 ---
 
-## 💻 Usage
+## 💻 Cara Pakai
 
-### 1. Web Interface (Recommended)
-Open your browser and go to:
+### 1. Lewat Web (Paling Gampang)
+Buka browser, terus akses:
 👉 **[http://localhost:5000](http://localhost:5000)**
 
-Simply select a JPG/PNG file and click "Upload & Resize".
+Tinggal pilih file gambar (JPG/PNG) terus klik tombol "Upload & Resize".
 
-### 2. API Endpoint
-You can also use `curl` or Postman:
+### 2. Lewat Terminal (Curl)
+Kalau mau nyoba gaya programmer backend:
 
 ```bash
 curl -X POST -F "file=@/path/to/image.jpg" http://localhost:5000/upload
 ```
 
-### 3. Check Results
-The processed images will appear in your local project folder:
-📂 **`storage/processed/`**
+### 3. Cek Hasilnya
+Gambar yang sudah selesai di-resize bakal muncul otomatis di folder:
+📂 **`storage/processed/`** (Cek di file explorer laptop kamu)
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing Beban (Load Test)
 
-### Load Testing (Concurrency)
-To see the distributed system in action, we have provided a load testing script that sends 10 concurrent requests.
+Buat membuktikan kalau sistem ini beneran terdistribusi (dikerjain bareng-bareng sama banyak worker), coba langkah ini:
 
-1.  Open a terminal to **monitor workers**:
+1.  Buka terminal baru buat **melihat log worker**:
     ```bash
     docker-compose logs -f worker
     ```
 
-2.  Open another terminal to **run the test**:
+2.  Buka terminal satu lagi buat **jalanin script test**:
     ```bash
     python load_test.py
     ```
 
-Observe the logs in the first terminal—you will see different workers (`worker-1`, `worker-2`, `worker-3`) picking up jobs in parallel.
+Perhatikan terminal yang nampilin log. Kamu bakal lihat `worker-1`, `worker-2`, dan `worker-3` ganti-gantian ngerjain tugasnya. Keren kan? 😎
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Skalabilitas
 
-### Scalling Workers
-Need more processing power? Scale the workers instantly:
+Butuh lebih banyak worker biar makin ngebut? Gampang, tinggal ketik:
 
 ```bash
 docker-compose up -d --scale worker=5
 ```
+Sekarang kamu punya 5 worker yang siap lembur!
 
 ---
 
-## 📝 License
-This project is created for **Komputasi Cloud - Tugas Besar**.
-Free to use and modify for educational purposes.
+## 📝 Lisensi
+Project ini dibuat untuk memenuhi **Tugas Besar Komputasi Cloud**.
+Boleh dipakai atau dimodifikasi buat belajar.
