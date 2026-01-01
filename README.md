@@ -69,14 +69,17 @@ project-root/
     ```bash
     cd path/to/project
     ```
-
-2.  **Jalankan aplikasi**:
+2.  **Jangan lupa Git Clone Terlebih dahulu**:
+    ```bash
+    Git Clone https://github.com/umaralf2735/Komputasi-Awan
+    ```
+3.  **Jalankan aplikasi**:
     ```bash
     docker-compose up -d --build
     ```
     *Tunggu sebentar sampai proses build selesai dan semua kontainer jalan.*
 
-3.  **Cek status**:
+4.  **Cek status**:
     ```bash
     docker-compose ps
     ```
