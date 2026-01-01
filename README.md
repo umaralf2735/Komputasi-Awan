@@ -47,9 +47,9 @@ project-root/
 ├── worker/             # Kodingan Worker (Pekerja)
 │   ├── worker.py
 │   └── Dockerfile
-├── storage/            # Folder Penyimpanan (Nyambung ke folder lokal)
-│   ├── uploads/        # Gambar asli masuk sini
-│   └── processed/      # Hasil resize masuk sini
+├── storage/            # Nyimpen Folder
+│   ├── uploads/        # Gambar Asli disini
+│   └── processed/      # Hasilnya disini
 ├── docker-compose.yml  # Config buat jalanin semua container
 ├── load_test.py        # Script buat ngetes beban (simulasi banyak upload)
 └── README.md
@@ -71,7 +71,7 @@ project-root/
     ```
 2.  **Jangan lupa Git Clone Terlebih dahulu**:
     ```bash
-    Git Clone https://github.com/umaralf2735/Komputasi-Awan
+    git clone https://github.com/umaralf2735/Komputasi-Awan
     ```
 3.  **Jalankan aplikasi**:
     ```bash
