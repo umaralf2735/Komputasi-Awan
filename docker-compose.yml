@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # REST API Service
+  api:
+    build: ./api
+    ports:
+      - "5000:5000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./storage:/app/storage
+      # For development hot-reloading (optional, remove for production)
+      # - ./api:/app
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    restart: always
+
+  # Message Queue
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"  # Exposed for debugging/monitoring, can remove in prod
+    networks:
+      - app-network
+    restart: always
+
+  # Worker Service (Scalable)
+  worker:
+    build: ./worker
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./storage:/app/storage
+    depends_on:
+      - redis
+    # Scale workers: docker-compose up -d --scale worker=3
+    deploy:
+      replicas: 3
+    networks:
+      - app-network
+    restart: always
+
+# volumes:
+#   storage-data:
+
+networks:
+  app-network:
+    driver: bridge

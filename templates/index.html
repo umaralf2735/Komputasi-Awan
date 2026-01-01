@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scalable Counter</title>
+</head>
+<body>
+    <h1>Scalable Counter App</h1>
+    <p>Served by Container ID: <b>{{ hostname }}</b></p>
+    <button onclick="increment()">Tambah</button>
+    <p id="counter">0</p>
+
+    <script>
+        async function loadCounter() {
+            const res = await fetch('/counter');
+            const data = await res.json();
+            document.getElementById('counter').innerText = data.counter;
+        }
+
+        async function increment() {
+            await fetch('/counter/increment', { method: 'POST' });
+            loadCounter();
+        }
+
+        loadCounter();
+    </script>
+</body>
+</html>
