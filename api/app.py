@@ -93,4 +93,4 @@ def health_check():
     return jsonify({'status': 'ok', 'redis': redis_status}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

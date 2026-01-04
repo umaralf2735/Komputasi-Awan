@@ -2,7 +2,7 @@ import requests
 import os
 
 url = 'http://localhost:5000/upload'
-files = {'file': open('test_image.jpg', 'rb')}
+files = {'file': open('Chibi_poses.jpg', 'rb')}
 
 try:
     response = requests.post(url, files=files)

@@ -4,7 +4,7 @@ import time
 import os
 
 URL = 'http://localhost:5000/upload'
-IMAGE_PATH = 'test_image.jpg'
+IMAGE_PATH = 'Chibi_poses.jpg'
 CONCURRENT_REQUESTS = 10
 
 def upload_image(i):
