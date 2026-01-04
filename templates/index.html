@@ -7,21 +7,103 @@
     <h1>Scalable Counter App</h1>
     <p>Served by Container ID: <b>{{ hostname }}</b></p>
     <button onclick="increment()">Tambah</button>
-    <p id="counter">0</p>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Scalable Counter</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+        <style>
+            :root{
+                --bg-1: #6a11cb;
+                --bg-2: #2575fc;
+                --card: rgba(255,255,255,0.95);
+                --accent: #ff7a59;
+                --muted: #6b7280;
+            }
+            *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+            html,body{height:100%;margin:0}
+            body{
+                background: linear-gradient(135deg,var(--bg-1),var(--bg-2));
+                display:flex;align-items:center;justify-content:center;padding:32px;color:#0f172a;
+            }
+            .wrap{
+                width:100%;max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.9), var(--card));border-radius:16px;padding:32px;box-shadow:0 20px 40px rgba(2,6,23,0.35);display:flex;gap:28px;align-items:center
+            }
+            .left{flex:1}
+            h1{margin:0;font-size:28px}
+            p.lead{margin:8px 0 22px;color:var(--muted)}
+            .host{font-weight:600;color:#0b1220}
 
-    <script>
-        async function loadCounter() {
-            const res = await fetch('/counter');
-            const data = await res.json();
-            document.getElementById('counter').innerText = data.counter;
-        }
+            .counter-card{width:260px;height:260px;border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,255,255,0.75));display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(12,18,45,0.12)}
+            .value{font-size:64px;font-weight:800;color:var(--bg-1);transition:transform .18s ease}
+            .subtitle{color:var(--muted);margin-top:6px}
 
-        async function increment() {
-            await fetch('/counter/increment', { method: 'POST' });
+            .controls{display:flex;gap:12px;margin-top:18px}
+            .btn{
+                padding:12px 18px;border-radius:12px;border:0;cursor:pointer;font-weight:600;color:white;background:linear-gradient(90deg,var(--bg-1),var(--bg-2));box-shadow:0 8px 20px rgba(37,117,252,0.25);
+            }
+            .btn:active{transform:translateY(1px)}
+            .small{padding:8px 12px;border-radius:10px;background:transparent;color:var(--bg-1);border:1px solid rgba(11,18,32,0.06)}
+
+            .pulse{animation:pulse .6s ease}
+            @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+            .meta{font-size:13px;color:var(--muted);margin-top:12px}
+            @media (max-width:800px){.wrap{flex-direction:column;padding:20px}.counter-card{width:100%;height:auto;padding:28px}}
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <div class="left">
+                <h1>Scalable Counter App</h1>
+                <p class="lead">Demo untuk menunjukkan scaling dan load-balancing. Setiap request bisa dilayani oleh container berbeda.</p>
+                <div class="meta">Served by Container ID: <span class="host">{{ hostname }}</span></div>
+                <div class="controls">
+                    <button id="incBtn" class="btn">Tambah</button>
+                    <button id="refreshBtn" class="small">Refresh</button>
+                </div>
+            </div>
+
+            <div class="counter-card">
+                <div id="counterValue" class="value">0</div>
+                <div class="subtitle">Total Requests</div>
+            </div>
+        </div>
+
+        <script>
+            const counterEl = document.getElementById('counterValue');
+            const incBtn = document.getElementById('incBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
+
+            async function loadCounter(){
+                try{
+                    const res = await fetch('/counter');
+                    const data = await res.json();
+                    const v = Number(data.counter) || 0;
+                    counterEl.innerText = v;
+                }catch(e){console.warn('Failed to load counter', e)}
+            }
+
+            async function increment(){
+                try{
+                    incBtn.disabled = true;
+                    incBtn.classList.add('pulse');
+                    await fetch('/counter/increment', { method: 'POST' });
+                    await loadCounter();
+                }catch(e){console.warn('Increment failed', e)}finally{
+                    incBtn.disabled = false;
+                    setTimeout(()=>incBtn.classList.remove('pulse'), 200);
+                }
+            }
+
+            incBtn.addEventListener('click', increment);
+            refreshBtn.addEventListener('click', loadCounter);
+
+            // Poll periodically to reflect updates from other containers
             loadCounter();
-        }
-
-        loadCounter();
-    </script>
-</body>
-</html>
+            setInterval(loadCounter, 2000);
+        </script>
+    </body>
+    </html>
